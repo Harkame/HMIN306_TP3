@@ -1,0 +1,26 @@
+!SESSION 2018-10-15 16:50:45.788 -----------------------------------------------
+eclipse.buildId=4.6.1.M20160907-1200
+java.version=1.8.0_181
+java.vendor=Oracle Corporation
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=fr_FR
+Framework arguments:  -product org.eclipse.epp.package.java.product
+Command-line arguments:  -os linux -ws gtk -arch x86_64 -product org.eclipse.epp.package.java.product
+
+!ENTRY org.eclipse.core.net 1 0 2018-10-15 16:51:11.641
+!MESSAGE System property http.proxyHost is not set but should be prodsif-pack.infra.umontpellier.fr.
+
+!ENTRY org.eclipse.core.net 1 0 2018-10-15 16:51:11.649
+!MESSAGE System property http.proxyPort is not set but should be 3128.
+!SESSION 2018-10-15 16:52:11.685 -----------------------------------------------
+eclipse.buildId=4.6.1.M20160907-1200
+java.version=1.8.0_181
+java.vendor=Oracle Corporation
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=fr_FR
+Framework arguments:  -product org.eclipse.epp.package.java.product
+Command-line arguments:  -os linux -ws gtk -arch x86_64 -product org.eclipse.epp.package.java.product
+
+!ENTRY org.eclipse.core.net 1 0 2018-10-15 16:52:19.683
+!MESSAGE System property http.proxyHost is not set but should be prodsif-pack.infra.umontpellier.fr.
+
+!ENTRY org.eclipse.core.net 1 0 2018-10-15 16:52:19.693
+!MESSAGE System property http.proxyPort is not set but should be 3128.

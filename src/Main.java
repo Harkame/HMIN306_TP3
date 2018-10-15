@@ -4,21 +4,26 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 public class Main
 {
-	final static int PERCENT = 10;
+	final static int PERCENT = 20;
+	final static String PATH = "/auto_home/achaillot/workspace/JapScanDownloader/src";
 	
 	final static int X = 2;
 	
@@ -31,22 +36,26 @@ public class Main
 	static int codeLineMethodAverage = 0;
 	static int attributeAverage = 0;
 	
-	static Map<Integer, String> classWithManyMethods = new TreeMap<Integer, String>();
-	static Map<Integer, String> classWithManyAttributes = new TreeMap<Integer, String>();
+	static List<String> percentClassWithManyMethods = new ArrayList<String>();
+	static List<String> percentClassWithManyAttributes = new ArrayList<String>();
 
 	static Collection<String> classWithManyMethodsAndAttributes = new ArrayList<String>();
 	
 	static Collection<String> classWithMoreThanXMethods = new ArrayList<String>();
-	static Collection<String> classWithLargestCode = new ArrayList<String>();
+	static Collection<String> percentMethodsWithLargestCode = new ArrayList<String>();
 	
 	static int maximumMethodParameter = 0;
 	
 	//Temp
 	
+	static TreeSet<SetType> classWithManyMethods = new TreeSet<SetType>();
+	static TreeSet<SetType> classWithManyAttributes = new TreeSet<SetType>();
+	static TreeSet<SetType> methodsWithLargestCode = new TreeSet<SetType>();
+	
 	static int attributeCounter = 0;
-	
+	static TreeSet<String> packages = new TreeSet<String>();
 	static int methodLineCounter = 0;
-	
+			
 	public static String fileToString(String filePath) throws IOException
 	{
 		StringBuilder fileCode = new StringBuilder(1000);
@@ -66,35 +75,38 @@ public class Main
 		return fileCode.toString();
 	}
 
-	public static String directoryToString(String directoryPath) throws IOException
+	public static void directoryToString(String directoryPath) throws IOException
 	{
 		File root = new File(directoryPath);
 
-		StringBuilder projectCode = new StringBuilder();
-
 		for(File file : root.listFiles())
 			if(file.isDirectory())
-				projectCode.append(directoryToString(file.getAbsolutePath()));
+				directoryToString(file.getAbsolutePath());
 			else
-				projectCode.append(fileToString(file.getAbsolutePath()));
+				parse(fileToString(file.getAbsolutePath()));
 		
-		return projectCode.toString();
 	}
 	
-	public static void main(String args[]) throws IOException
+	public static void parse(String code) throws IOException
 	{
 		ASTParser astParser = ASTParser.newParser(AST.JLS3);
 
 
-		astParser.setSource(directoryToString("D:\\workspace\\JapscanDownloader\\src").toCharArray());
+		astParser.setSource(code.toCharArray());
 
 		astParser.setKind(ASTParser.K_COMPILATION_UNIT);
 
 		final CompilationUnit compilationUnit = (CompilationUnit) astParser.createAST(null);
-
 		compilationUnit.accept(new ASTVisitor()
 		{
-			public boolean visit(TypeDeclaration node)
+		
+			public boolean visit (PackageDeclaration node){
+				packages.add(node.getName().toString());
+				packageCounter++;	
+				return true;
+			}
+			
+			public boolean visit (TypeDeclaration node)
 			{
 				SimpleName className = node.getName();
 
@@ -106,10 +118,8 @@ public class Main
 					localLineCounter += node.toString().length() - node.toString().replace("\n", "").length();
 
 				lineCounter += localLineCounter;
-				
-				
 				classCounter++;
-				
+						
 				System.out.println("Superclass : ");
 				for(Object object : node.superInterfaceTypes())
 					System.out.println(object);
@@ -119,17 +129,18 @@ public class Main
 				for(FieldDeclaration fieldDeclaration : node.getFields())
 					System.out.println(
 						fieldDeclaration.fragments().get(0) + " - " + fieldDeclaration.modifiers().toString());
-				
 				attributeCounter += node.getFields().length;
 				
-				classWithManyAttributes.put(node.getFields().length, className.toString());
+				classWithManyAttributes.add(new  SetType(className.toString(), node.getFields().length));
 
 				System.out.println("---");
+				
 				
 				for(MethodDeclaration methodDeclaration : node.getMethods())
 				{
 					System.out.println(methodDeclaration.getName() + " - " + methodDeclaration.getReturnType2()
 						+ " - " + methodDeclaration.parameters());
+					
 					
 					if(methodDeclaration.parameters().size() > maximumMethodParameter)
 						maximumMethodParameter = methodDeclaration.parameters().size();
@@ -140,18 +151,88 @@ public class Main
 						localLineCounter += methodDeclaration.getBody().toString().length() - methodDeclaration.getBody().toString().replace("\n", "").length();
 
 					methodLineCounter += localLineCounter;
+					
+					methodsWithLargestCode.add(new SetType((methodDeclaration.getName() + " - " + methodDeclaration.getReturnType2()+ " - " + methodDeclaration.parameters())
+							, localLineCounter
+							, methodDeclaration.getName().toString()));
+								
 				}
 				
 				if(node.getMethods().length > X)
 					classWithMoreThanXMethods.add(className.toString());
 				
-				classWithManyMethods.put(node.getMethods().length, className.toString());
+				classWithManyMethods.add(new SetType(className.toString(), node.getMethods().length));
 				
 				methodCounter += node.getMethods().length;
 
-				return false;
+				return true;
 			}
-		});
+			
+		});		
+	}
+
+	public static void percentOfClassWithManyMethods(){
+		int numberToSelect = (classCounter * PERCENT) / 100;	
+		int cpt = 0;
+		
+		for(SetType it : classWithManyMethods){
+			if(cpt != numberToSelect){
+				percentClassWithManyMethods.add(it.toString());	
+				cpt++;
+			}
+			else{
+				return;
+			}
+		}
+	}
+	
+	public static void percentOfClassWithManyAttributs(){
+		int numberToSelect = (classCounter * PERCENT) / 100;	
+		int cpt = 0;
+		
+		for(SetType it : classWithManyAttributes){
+			if(cpt != numberToSelect){
+				percentClassWithManyAttributes.add(it.toString());	
+				cpt++;
+			}
+			else{
+				return;
+			}
+		}
+	}
+	
+	public static void percentOfMethodsWithLargestCode(){
+		int numberToSelect = (methodCounter * PERCENT) / 100;	
+		int cpt = 0;
+		
+		for(SetType it : methodsWithLargestCode){
+			if(cpt != numberToSelect){
+				percentMethodsWithLargestCode.add(it.toString());	
+				cpt++;
+			}
+			else{
+				return;
+			}
+		}
+	}
+	
+	public static void mergeBetweenClassWithManyAttributesAndMethods(){
+		for(String cMethods: percentClassWithManyMethods){
+			for(String cAttributes: percentClassWithManyAttributes){
+				if(cMethods.equals(cAttributes)){
+					classWithManyMethodsAndAttributes.add(cMethods.toString());
+				}
+			}
+		}
+	}
+	
+	public static void main(String[] args) throws IOException {
+		
+		directoryToString(PATH);
+		percentOfClassWithManyMethods();
+		percentOfClassWithManyAttributs();
+		percentOfMethodsWithLargestCode();
+		mergeBetweenClassWithManyAttributesAndMethods();
 		
 		System.out.println(System.getProperty("line.separator"));
 		System.out.println("--- Result --- ");
@@ -164,19 +245,14 @@ public class Main
 		
 		System.out.println("codeLineMethodAverage : " + methodLineCounter / methodCounter); //codeLineMethodAverage
 		System.out.println("attributeAverage : " + attributeCounter / classCounter); //attributeAverage
-		
-		System.out.println("classWithManyMethods : " + classWithManyMethods.toString());
-		System.out.println("classWithManyAttributes : " + classWithManyAttributes.toString());
-		
-		for (Map.Entry<Integer, String> methodEntry : classWithManyMethods.entrySet())
-			for (Map.Entry<Integer, String> attributeEntry : classWithManyAttributes.entrySet())
-				if(methodEntry.getValue().equals(attributeEntry.getValue()))
-					classWithManyMethodsAndAttributes.add(methodEntry.getValue());
+	
+		System.out.println(PERCENT + "% of class with many Methods : " + percentClassWithManyMethods.toString());
+		System.out.println(PERCENT + "% of class with many Attributes : " + percentClassWithManyAttributes.toString());
 		
 		System.out.println("classWithManyMethodsAndAttributes : " + classWithManyMethodsAndAttributes.toString());
 		
-		System.out.println("classWithMoreThanXMethods : " + classWithMoreThanXMethods.toString());
-		System.out.println("classWithLargestCode : " + classWithLargestCode.toString());
+		System.out.println("class With More Than " + X + " Methods : " + classWithMoreThanXMethods.toString());
+		System.out.println(PERCENT + "% of Methods with largest code (by number of line) : " + percentMethodsWithLargestCode.toString());
 		
 		System.out.println("maximumMethodParameter : " + maximumMethodParameter);
 	}
