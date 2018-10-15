@@ -139,7 +139,7 @@ public class Main
 					if(localLineCounter == 0)
 						localLineCounter += methodDeclaration.getBody().toString().length() - methodDeclaration.getBody().toString().replace("\n", "").length();
 
-					lineCounter += localLineCounter;
+					methodLineCounter += localLineCounter;
 				}
 				
 				if(node.getMethods().length > X)
@@ -168,15 +168,11 @@ public class Main
 		System.out.println("classWithManyMethods : " + classWithManyMethods.toString());
 		System.out.println("classWithManyAttributes : " + classWithManyAttributes.toString());
 		
-		Collection<String> inner = new ArrayList<String>();
-		
 		for (Map.Entry<Integer, String> methodEntry : classWithManyMethods.entrySet())
 			for (Map.Entry<Integer, String> attributeEntry : classWithManyAttributes.entrySet())
 				if(methodEntry.getValue().equals(attributeEntry.getValue()))
-					inner.add(methodEntry.getValue());
+					classWithManyMethodsAndAttributes.add(methodEntry.getValue());
 		
-		System.out.println("inner : " + inner.toString());
-					
 		System.out.println("classWithManyMethodsAndAttributes : " + classWithManyMethodsAndAttributes.toString());
 		
 		System.out.println("classWithMoreThanXMethods : " + classWithMoreThanXMethods.toString());
