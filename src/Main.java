@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.swing.JFrame;
+
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -22,39 +24,41 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 public class Main
 {
-	final static int PERCENT = 20;
-	final static String PATH = "/auto_home/achaillot/workspace/JapScanDownloader/src";
+	private final static int PERCENT = 20;
+	private final static String PATH = "D:\\workspace\\JapscanDownloader\\src";
 	
-	final static int X = 2;
+	private final static int X = 2;
 	
-	static int classCounter = 0;
-	static int lineCounter = 0;
-	static int methodCounter = 0;
-	static int packageCounter = 0;
+	private static int classCounter = 0;
+	private static int lineCounter = 0;
+	private static int methodCounter = 0;
+	private static int packageCounter = 0;
 	
-	static int methodAverage = 0;
-	static int codeLineMethodAverage = 0;
-	static int attributeAverage = 0;
+	private static int methodAverage = 0;
+	private static int codeLineMethodAverage = 0;
+	private static int attributeAverage = 0;
 	
-	static List<String> percentClassWithManyMethods = new ArrayList<String>();
-	static List<String> percentClassWithManyAttributes = new ArrayList<String>();
+	private static List<String> percentClassWithManyMethods = new ArrayList<String>();
+	private static List<String> percentClassWithManyAttributes = new ArrayList<String>();
 
-	static Collection<String> classWithManyMethodsAndAttributes = new ArrayList<String>();
+	private static Collection<String> classWithManyMethodsAndAttributes = new ArrayList<String>();
 	
-	static Collection<String> classWithMoreThanXMethods = new ArrayList<String>();
-	static Collection<String> percentMethodsWithLargestCode = new ArrayList<String>();
+	private static Collection<String> classWithMoreThanXMethods = new ArrayList<String>();
+	private static Collection<String> percentMethodsWithLargestCode = new ArrayList<String>();
 	
-	static int maximumMethodParameter = 0;
+	private static int maximumMethodParameter = 0;
 	
 	//Temp
 	
-	static TreeSet<SetType> classWithManyMethods = new TreeSet<SetType>();
-	static TreeSet<SetType> classWithManyAttributes = new TreeSet<SetType>();
-	static TreeSet<SetType> methodsWithLargestCode = new TreeSet<SetType>();
+	private static Map<String, Collection<String>> classMethods = new TreeMap<String, Collection<String>>();
 	
-	static int attributeCounter = 0;
-	static TreeSet<String> packages = new TreeSet<String>();
-	static int methodLineCounter = 0;
+	private static TreeSet<SetType> classWithManyMethods = new TreeSet<SetType>();
+	private static TreeSet<SetType> classWithManyAttributes = new TreeSet<SetType>();
+	private static TreeSet<SetType> methodsWithLargestCode = new TreeSet<SetType>();
+	
+	private static int attributeCounter = 0;
+	private static TreeSet<String> packages = new TreeSet<String>();
+	private static int methodLineCounter = 0;
 			
 	public static String fileToString(String filePath) throws IOException
 	{
@@ -109,6 +113,8 @@ public class Main
 			public boolean visit (TypeDeclaration node)
 			{
 				SimpleName className = node.getName();
+				
+				classMethods.put(className.toString(), new ArrayList<String>());
 
 				System.out.println("Class :  " + className.toString() + " - " + node.modifiers());
 				
@@ -141,7 +147,6 @@ public class Main
 					System.out.println(methodDeclaration.getName() + " - " + methodDeclaration.getReturnType2()
 						+ " - " + methodDeclaration.parameters());
 					
-					
 					if(methodDeclaration.parameters().size() > maximumMethodParameter)
 						maximumMethodParameter = methodDeclaration.parameters().size();
 					
@@ -152,10 +157,11 @@ public class Main
 
 					methodLineCounter += localLineCounter;
 					
+					classMethods.get(className.toString()).add(methodDeclaration.getName().toString());
+					
 					methodsWithLargestCode.add(new SetType((methodDeclaration.getName() + " - " + methodDeclaration.getReturnType2()+ " - " + methodDeclaration.parameters())
 							, localLineCounter
-							, methodDeclaration.getName().toString()));
-								
+							, methodDeclaration.getName().toString()));	
 				}
 				
 				if(node.getMethods().length > X)
@@ -255,5 +261,18 @@ public class Main
 		System.out.println(PERCENT + "% of Methods with largest code (by number of line) : " + percentMethodsWithLargestCode.toString());
 		
 		System.out.println("maximumMethodParameter : " + maximumMethodParameter);
+		
+		String className = "MyString";
+		
+		for(Map.Entry<String, Collection<String>> entry : classMethods.entrySet())
+		{
+			if(entry.getKey().equals(className))
+			{
+				MethodsList frame = new MethodsList(className, entry.getValue());
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				frame.setSize(800, 740);
+				frame.setVisible(true);
+			}
+		}
 	}
 }
