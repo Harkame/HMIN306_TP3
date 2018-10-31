@@ -12,7 +12,6 @@ import java.util.TreeSet;
 import javax.swing.JFrame;
 
 import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -161,7 +160,7 @@ public class Main
 					
 					methodsWithLargestCode.add(new SetType((methodDeclaration.getName() + " - " + methodDeclaration.getReturnType2()+ " - " + methodDeclaration.parameters())
 							, localLineCounter
-							, methodDeclaration.getName().toString()));	
+							, methodDeclaration.getName().toString()));						
 				}
 				
 				if(node.getMethods().length > X)
@@ -240,6 +239,10 @@ public class Main
 		percentOfMethodsWithLargestCode();
 		mergeBetweenClassWithManyAttributesAndMethods();
 		
+		methodAverage = methodCounter / classCounter;
+		codeLineMethodAverage = methodLineCounter / methodCounter;
+		attributeAverage = attributeCounter / classCounter;
+		
 		System.out.println(System.getProperty("line.separator"));
 		System.out.println("--- Result --- ");
 		System.out.println(System.getProperty("line.separator"));
@@ -249,8 +252,9 @@ public class Main
 		System.out.println("methodCounter : " + methodCounter);
 		System.out.println("packageCounter : " + packageCounter);
 		
-		System.out.println("codeLineMethodAverage : " + methodLineCounter / methodCounter); //codeLineMethodAverage
-		System.out.println("attributeAverage : " + attributeCounter / classCounter); //attributeAverage
+		System.out.println("methodAverage : " + methodAverage);
+		System.out.println("codeLineMethodAverage : " + codeLineMethodAverage);
+		System.out.println("attributeAverage : " + attributeAverage);
 	
 		System.out.println(PERCENT + "% of class with many Methods : " + percentClassWithManyMethods.toString());
 		System.out.println(PERCENT + "% of class with many Attributes : " + percentClassWithManyAttributes.toString());
