@@ -14,22 +14,27 @@ import java.util.TreeSet;
 import javax.swing.JFrame;
 
 import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
+import fr.harkame.astparser.example.TreeStructure;
 import fr.harkame.astparser.util.MethodsList;
 import fr.harkame.astparser.util.SetType;
 
 public class Main
 {
 	private final static int PERCENT = 20;
-	private final static String PATH = "D:\\workspace\\JapscanDownloader\\src";
+	private final static String PATH = "/auto_home/ldaviaud/workspace/JapscanDownloader/src";
 	
 	private final static int X = 2;
 	
@@ -55,6 +60,9 @@ public class Main
 	//Temp
 	
 	private static Map<String, Collection<String>> classMethods = new TreeMap<String, Collection<String>>();
+	private static Map<String, Collection<String>> methodMethods = new TreeMap<String, Collection<String>>();
+	
+	private static Map<String, TreeStructure> treeStructures = new TreeMap<String, TreeStructure>();
 	
 	private static TreeSet<SetType> classWithManyMethods = new TreeSet<SetType>();
 	private static TreeSet<SetType> classWithManyAttributes = new TreeSet<SetType>();
@@ -99,7 +107,6 @@ public class Main
 	{
 		ASTParser astParser = ASTParser.newParser(AST.JLS3);
 
-
 		astParser.setSource(code.toCharArray());
 
 		astParser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -118,10 +125,11 @@ public class Main
 			{
 				SimpleName className = node.getName();
 				
+				if(treeStructures.get(node.getName().toString()) == null)
+					treeStructures.put(node.getName().toString(), new TreeStructure(node.getName().toString()));
+				
 				classMethods.put(className.toString(), new ArrayList<String>());
 
-				System.out.println("Class :  " + className.toString() + " - " + node.modifiers());
-				
 				int localLineCounter = node.toString().length() - node.toString().replace(System.getProperty("line.separator"), "").length();
 				
 				if(localLineCounter == 0)
@@ -130,27 +138,27 @@ public class Main
 				lineCounter += localLineCounter;
 				classCounter++;
 						
-				System.out.println("Superclass : ");
+				/*
 				for(Object object : node.superInterfaceTypes())
 					System.out.println(object);
+				*/
 
-				System.out.println("---");
-
+				/*
 				for(FieldDeclaration fieldDeclaration : node.getFields())
 					System.out.println(
 						fieldDeclaration.fragments().get(0) + " - " + fieldDeclaration.modifiers().toString());
+				*/
 				attributeCounter += node.getFields().length;
 				
 				classWithManyAttributes.add(new  SetType(className.toString(), node.getFields().length));
 
-				System.out.println("---");
-				
-				
+
 				for(MethodDeclaration methodDeclaration : node.getMethods())
 				{
+					/*
 					System.out.println(methodDeclaration.getName() + " - " + methodDeclaration.getReturnType2()
 						+ " - " + methodDeclaration.parameters());
-					
+					*/
 					if(methodDeclaration.parameters().size() > maximumMethodParameter)
 						maximumMethodParameter = methodDeclaration.parameters().size();
 					
@@ -163,9 +171,12 @@ public class Main
 					
 					classMethods.get(className.toString()).add(methodDeclaration.getName().toString());
 					
+					if(treeStructures.get(node.getName().toString()).declarationInvocations.get(methodDeclaration.getName().toString()) == null)
+						treeStructures.get(node.getName().toString()).declarationInvocations.put(methodDeclaration.getName().toString(), new TreeSet<String>());
+					
 					methodsWithLargestCode.add(new SetType((methodDeclaration.getName() + " - " + methodDeclaration.getReturnType2()+ " - " + methodDeclaration.parameters())
 							, localLineCounter
-							, methodDeclaration.getName().toString()));						
+							, methodDeclaration.getName().toString()));
 				}
 				
 				if(node.getMethods().length > X)
@@ -175,6 +186,47 @@ public class Main
 				
 				methodCounter += node.getMethods().length;
 
+				return true;
+			}
+			
+			public boolean visit(MethodInvocation methodInvocation) {
+				
+				try
+				{
+					ASTNode parent = methodInvocation.getParent();
+				
+					if(parent == null)
+						return true;
+				
+					while(parent.getNodeType() != 31)
+						parent = parent.getParent();
+					
+					MethodDeclaration methodDeclaration = (MethodDeclaration) parent;
+					
+					parent = methodInvocation.getParent();
+					
+					if(parent == null)
+						return true;
+					
+					while(parent.getNodeType() != 55)
+						parent = parent.getParent();
+					
+					TypeDeclaration typeDeclaration = (TypeDeclaration) parent;
+					
+					if(treeStructures.get(typeDeclaration.getName().toString()).declarationInvocations.get(methodDeclaration.getName().toString()) == null)
+						treeStructures.get(typeDeclaration.getName().toString()).declarationInvocations.put(methodDeclaration.getName().toString(), new TreeSet<String>());
+					
+					//System.out.println("METHODINVOCATION : " + methodInvocation.getName().toString());
+
+					treeStructures.get(typeDeclaration.getName().toString()).declarationInvocations.get(methodDeclaration.getName().toString()).add(methodInvocation.getName().toString());
+					
+					methodMethods.get(methodDeclaration.getName().toString()).add(methodInvocation.getName().toString());
+				}
+				catch(NullPointerException nullPointerException)
+				{
+					
+				}
+				
 				return true;
 			}
 			
@@ -273,11 +325,25 @@ public class Main
 		
 		String className = "MyString";
 		
+		/*
 		for(Map.Entry<String, Collection<String>> entry : classMethods.entrySet())
 		{
 			if(entry.getKey().equals(className))
 			{
-				MethodsList frame = new MethodsList(className, entry.getValue());
+				MethodsList frame = new MethodsList(treeStructure);
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				frame.setSize(800, 740);
+				frame.setVisible(true);
+			}
+		}
+		*/
+		
+		
+		for(Map.Entry<String, TreeStructure> entry : treeStructures.entrySet())
+		{
+			if(entry.getKey().equals(className))
+			{
+				MethodsList frame = new MethodsList(entry.getValue());
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				frame.setSize(800, 740);
 				frame.setVisible(true);
