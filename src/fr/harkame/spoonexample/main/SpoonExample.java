@@ -47,28 +47,8 @@ public class SpoonExample
 			"\"\"", ModifierKind.PRIVATE);
 
 		ctClass.addFieldAtTop(ctFieldCity);
-	}
-	
-	public void createFile(String classFilePath) throws IOException
-	{
-		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(classFilePath));
 		
-		bufferedWriter.write("package " + ctClass.getPackage().toString() + ";");
-		bufferedWriter.write("");
-		bufferedWriter.write(ctClass.toString());
-	     
-		bufferedWriter.close();
-	}
-	
-	public static void main(String[] Args) throws IOException
-	{
-
-
-		System.out.println(ctClass.toString());
-
 		CtConstructor<?> ctConstructor = (CtConstructor<?>) ctClass.getConstructors().toArray()[0];
-
-		System.out.println(ctConstructor.toString());
 
 		CtParameter<String> ctParameterCity = coreFactory.createParameter();
 		ctParameterCity.setType(typeFactory.createReference(String.class));
@@ -76,14 +56,11 @@ public class SpoonExample
 
 		ctConstructor.addParameter(ctParameterCity);
 
-		System.out.println(ctConstructor.toString());
 		CtBlock<?> ctBlockConstructorBody = ctConstructor.getBody();
 
 		ctBlockConstructorBody.addStatement(codeFactory.createCodeSnippetStatement("this.city = city;"));
 		ctConstructor.setBody(ctBlockConstructorBody);
-
-		System.out.println(ctConstructor.toString());
-
+		
 		CtMethod<?> ctMethodToString = ctClass.getMethod("toString");
 
 		System.out.println(ctMethodToString);
@@ -111,9 +88,10 @@ public class SpoonExample
 		ctMethodToString.getBody().setStatements(statements);
 		
 		ctConstructor.setBody(ctBlockConstructorBody);
-		
-		System.out.println(ctMethodToString.toString());
-		
+	}
+	
+	public void addMethod(String methodName)
+	{
 		CtMethod<Void> ctMethod = coreFactory.createMethod();
 		
 		ctMethod.setSimpleName("newMethod");
@@ -124,15 +102,27 @@ public class SpoonExample
 		
 		ctClass.addMethod(ctMethod);
 		
-		ctClass.setSimpleName("ModifiedPerson");
+		ctClass.setSimpleName(methodName);
+	}
+	
+	public void createFile(String classFilePath) throws IOException
+	{
+		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(classFilePath));
 		
+		bufferedWriter.write("package " + ctClass.getPackage().toString() + ";");
+		bufferedWriter.write("");
+		bufferedWriter.write(ctClass.toString());
+	     
+		bufferedWriter.close();
+	}
+	
+	public static void main(String[] Args) throws IOException
+	{		
 		SpoonExample spoonExample = new SpoonExample("./src/fr/harkame/spoonexample/model/Person.java", "fr.harkame.spoonexample.model.Person");
 		
+		spoonExample.addField("city", String.class);
+		
 		spoonExample.createFile("./src/fr/harkame/spoonexample/model/ModifiedPerson.java");
-		
-		
-		System.out.println(ctClass.toString());
-	
 	}
 	
 	/*

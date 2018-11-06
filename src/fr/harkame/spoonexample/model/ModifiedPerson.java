@@ -1,11 +1,11 @@
-package fr.harkame.spoonexample.model;public class ModifiedPerson {
+package fr.harkame.spoonexample.model;public class Person {
     private java.lang.String city = "";
 
     private int age;
 
     private java.lang.String name;
 
-    public ModifiedPerson(int age, java.lang.String name, java.lang.String city) {
+    public Person(int age, java.lang.String name, java.lang.String city) {
         super();
         this.age = age;
         this.name = name;
@@ -19,9 +19,5 @@ package fr.harkame.spoonexample.model;public class ModifiedPerson {
         + "age : " + age
         + "name : " + name
         ;
-    }
-
-    public void newMethod() {
-        System.out.println("New method");
     }
 }
