@@ -1,10 +1,14 @@
 package fr.harkame.spoonexample.main;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import spoon.Launcher;
 import spoon.reflect.code.CtBlock;
+import spoon.reflect.code.CtStatement;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtField;
@@ -18,24 +22,47 @@ import spoon.reflect.reference.CtFieldReference;
 
 public class SpoonExample
 {
-	public static void main(String[] Args)
-	{
+	private CoreFactory coreFactory;
+	private CodeFactory codeFactory;
+	private TypeFactory typeFactory;
+	
+	private CtClass<?> ctClass;
+	
+	public SpoonExample(String classFilePath, String className)
+	{	
 		Launcher launcher = new Launcher();
-		launcher.addInputResource("./src/fr/harkame/spoonexample/example/Person.java");
+		launcher.addInputResource(classFilePath);
 		launcher.buildModel();
 
-		CoreFactory coreFactory = launcher.getFactory().Core();
-		CodeFactory codeFactory = launcher.getFactory().Code();
-		TypeFactory typeFactory = launcher.getFactory().Type();
-
-		CtClass<?> ctClass = (CtClass<?>) launcher.getFactory().Type().get("fr.harkame.spoonexample.example.Person");
-
-		System.out.println(ctClass.toString());
-
+		coreFactory = launcher.getFactory().Core();
+		codeFactory = launcher.getFactory().Code();
+		typeFactory = launcher.getFactory().Type();
+		
+		ctClass = (CtClass<?>) launcher.getFactory().Type().get(className);
+	}
+	
+	public void addField(String fieldName, Class fieldClass)
+	{
 		CtField<String> ctFieldCity = codeFactory.createCtField("city", typeFactory.createReference(String.class),
 			"\"\"", ModifierKind.PRIVATE);
 
 		ctClass.addFieldAtTop(ctFieldCity);
+	}
+	
+	public void createFile(String classFilePath) throws IOException
+	{
+		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(classFilePath));
+		
+		bufferedWriter.write("package " + ctClass.getPackage().toString() + ";");
+		bufferedWriter.write("");
+		bufferedWriter.write(ctClass.toString());
+	     
+		bufferedWriter.close();
+	}
+	
+	public static void main(String[] Args) throws IOException
+	{
+
 
 		System.out.println(ctClass.toString());
 
@@ -64,22 +91,21 @@ public class SpoonExample
 		StringBuilder toString = new StringBuilder();
 		
 		toString.append("return ");
-		toString.append("\"Person : \" + ");
+		toString.append("\"Person : \"");
 		toString.append(System.getProperty("line.separator"));
-		
+
 		for(CtFieldReference<?> ctFieldReference : ctClass.getAllFields())
 		{
-			toString.append("\"");
+			toString.append("+ \"");
 			toString.append(ctFieldReference.getSimpleName());
 			toString.append(" : \" + ");
 			toString.append(ctFieldReference.getSimpleName());
-			toString.append(" + ");
 			toString.append(System.getProperty("line.separator"));
 		}
 		
 		ctBlockConstructorBody = ctConstructor.getBody();
 		
-		List statements = new ArrayList();
+		List<CtStatement> statements = new ArrayList<CtStatement>();
 		statements.add(codeFactory.createCodeSnippetStatement(toString.toString()));
 		
 		ctMethodToString.getBody().setStatements(statements);
@@ -88,7 +114,7 @@ public class SpoonExample
 		
 		System.out.println(ctMethodToString.toString());
 		
-		CtMethod ctMethod = coreFactory.createMethod();
+		CtMethod<Void> ctMethod = coreFactory.createMethod();
 		
 		ctMethod.setSimpleName("newMethod");
 		ctMethod.setVisibility(ModifierKind.PUBLIC);
@@ -98,6 +124,22 @@ public class SpoonExample
 		
 		ctClass.addMethod(ctMethod);
 		
+		ctClass.setSimpleName("ModifiedPerson");
+		
+		SpoonExample spoonExample = new SpoonExample("./src/fr/harkame/spoonexample/model/Person.java", "fr.harkame.spoonexample.model.Person");
+		
+		spoonExample.createFile("./src/fr/harkame/spoonexample/model/ModifiedPerson.java");
+		
+		
 		System.out.println(ctClass.toString());
+	
 	}
+	
+	/*
+	public static void main(String[] Args)
+	{
+    		ModifiedPerson modifiedPerson = new ModifiedPerson(42, "Toto", "Montpellier");
+    		System.out.println(modifiedPerson);
+	}
+	*/
 }
