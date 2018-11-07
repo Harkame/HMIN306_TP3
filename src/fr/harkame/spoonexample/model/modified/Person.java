@@ -1,4 +1,6 @@
-package fr.harkame.spoonexample.model;public class Person {
+package fr.harkame.spoonexample.model.modified;
+
+public class Person {
     private java.lang.String city = "";
 
     private int age;
@@ -19,5 +21,9 @@ package fr.harkame.spoonexample.model;public class Person {
         + "age : " + age
         + "name : " + name
         ;
+    }
+
+    public void newMethod() {
+        System.out.println("New method");
     }
 }
