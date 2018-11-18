@@ -94,7 +94,7 @@ public class ASTParserExample
 
 	public void initialize() throws IOException
 	{
-		exploreProject();
+		exploreProject(sourcePath);
 		parseProject();
 
 		percentOfClassWithManyMethods();
@@ -103,9 +103,9 @@ public class ASTParserExample
 		mergeBetweenClassWithManyAttributesAndMethods();
 	}
 
-	public void exploreProject() throws IOException
+	public void exploreProject(String directory) throws IOException
 	{
-		File root = new File(sourcePath);
+		File root = new File(directory);
 
 		for(File file : root.listFiles())
 			if(file.isDirectory())
