@@ -1,4 +1,4 @@
-package fr.harkame.spoonexample.model.modified;
+package fr.harkame.spoon.modification.model.modified;
 
 public class Person {
     private java.lang.String city = "";

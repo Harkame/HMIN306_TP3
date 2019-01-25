@@ -1,4 +1,4 @@
-package fr.harkame.astparser.example.structure;
+package fr.harkame.astparser.structure;
 
 public class SetType implements Comparable<SetType>{
 

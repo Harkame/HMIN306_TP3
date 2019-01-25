@@ -1,4 +1,4 @@
-package fr.harkame.spoonexample.model;
+package fr.harkame.spoon.modification.model;
 
 public class Person
 {

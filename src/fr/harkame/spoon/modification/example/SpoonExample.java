@@ -1,4 +1,4 @@
-package fr.harkame.spoonexample.main;
+package fr.harkame.spoon.modification.example;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -47,6 +47,8 @@ public class SpoonExample <T>
 		typeFactory = launcher.getFactory().Type();
 		
 		ctClass = (CtClass<T>) launcher.getFactory().Type().get(className);
+		
+		System.out.println(ctClass.toString());
 	}
 	
 	/**
@@ -65,6 +67,8 @@ public class SpoonExample <T>
 		alterConstructor(fieldName, fieldClass);
 		
 		alterToString();
+		
+		System.out.println(ctClass.toString());
 	}
 	
 	/**
@@ -92,6 +96,8 @@ public class SpoonExample <T>
 		ctConstructor.setBody(ctBlockConstructorBody);
 		
 		ctBlockConstructorBody = ctConstructor.getBody();
+		
+		System.out.println(ctClass.toString());
 	}
 	
 	/**
@@ -123,6 +129,8 @@ public class SpoonExample <T>
 		statements.add(codeFactory.createCodeSnippetStatement(toString.toString()));
 		
 		ctMethod.getBody().setStatements(statements);
+		
+		System.out.println(ctClass.toString());
 	}
 	
 	/**
@@ -143,6 +151,8 @@ public class SpoonExample <T>
 		ctMethod.setBody(codeFactory.createCodeSnippetStatement(methodBody));
 		
 		ctClass.addMethod(ctMethod);
+		
+		System.out.println(ctClass.toString());
 	}
 	
 	/**
@@ -158,20 +168,11 @@ public class SpoonExample <T>
 		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(classFilePath));
 		
 		bufferedWriter.write("package " + packageName + ";");
+		
 		bufferedWriter.write(LINE_SEPARATOR + LINE_SEPARATOR);
+		
 		bufferedWriter.write(ctClass.toString());
 	     
 		bufferedWriter.close();
-	}
-	
-	public static void main(String[] Args) throws IOException
-	{		
-		SpoonExample<Void> spoonExample = new SpoonExample<Void>("./src/fr/harkame/spoonexample/model/Person.java", "fr.harkame.spoonexample.model.Person");
-		
-		spoonExample.addField("city", String.class);
-		
-		spoonExample.addMethod("newMethod", "System.out.println(\"New method\")");
-		
-		spoonExample.createFile("./src/fr/harkame/spoonexample/model/modified/Person.java", "fr.harkame.spoonexample.model.modified");
 	}
 }
