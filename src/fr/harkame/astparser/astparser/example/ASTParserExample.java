@@ -37,7 +37,7 @@ public class ASTParserExample
 		this.environmentClassPath = environmentClassPath;
 		this.environmentSourcePath = environmentSourcePath;
 
-		astParser = ASTParser.newParser(AST.JLS9);
+		astParser = ASTParser.newParser(AST.JLS10);
 		astParser.setResolveBindings(true);
 		astParser.setKind(ASTParser.K_COMPILATION_UNIT);
 
@@ -92,7 +92,7 @@ public class ASTParserExample
 		String[] environmentSourcesFormated =
 		{ this.environmentSourcePath };
 		
-		astParser = ASTParser.newParser(AST.JLS9);
+		astParser = ASTParser.newParser(AST.JLS10);
 		astParser.setResolveBindings(true);
 		astParser.setKind(ASTParser.K_COMPILATION_UNIT);
 
