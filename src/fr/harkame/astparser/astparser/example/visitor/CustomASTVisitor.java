@@ -15,6 +15,7 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import fr.harkame.astparser.structure.SetType;
@@ -57,29 +58,38 @@ public class CustomASTVisitor extends ASTVisitor
 	public static int methodLineCounter = 0;
 	
 	// END METRICS
-
-	public boolean visit(TypeDeclaration node)
+	
+	@Override
+	public boolean visit(PackageDeclaration packageDeclaration)
 	{
-		String className = getQualifiedName(node.getName().toString());
+		packageCounter++;
+		
+		return true;
+	}
+
+	@Override
+	public boolean visit(TypeDeclaration typeDeclaration)
+	{
+		String className = getQualifiedName(typeDeclaration.getName().toString());
 		
 		classTree.addClassDeclaration(className);
 		
 		classMethods.put(className.toString(), new ArrayList<String>());
 
-		int localLineCounter = node.toString().length()
-				- node.toString().replace(System.getProperty("line.separator"), "").length();
+		int localLineCounter = typeDeclaration.toString().length()
+				- typeDeclaration.toString().replace(System.getProperty("line.separator"), "").length();
 
 		if (localLineCounter == 0)
-			localLineCounter += node.toString().length() - node.toString().replace("\n", "").length();
+			localLineCounter += typeDeclaration.toString().length() - typeDeclaration.toString().replace("\n", "").length();
 
 		lineCounter += localLineCounter;
 		classCounter++;
 
-		attributeCounter += node.getFields().length;
+		attributeCounter += typeDeclaration.getFields().length;
 
-		classWithManyAttributes.add(new SetType(className.toString(), node.getFields().length));
+		classWithManyAttributes.add(new SetType(className.toString(), typeDeclaration.getFields().length));
 
-		for (MethodDeclaration methodDeclaration : node.getMethods())
+		for (MethodDeclaration methodDeclaration : typeDeclaration.getMethods())
 		{	
 			classTree.addMethodDeclaration(className, methodDeclaration.getName().toString());
 			if (methodDeclaration.parameters().size() > maximumMethodParameter)
@@ -105,16 +115,17 @@ public class CustomASTVisitor extends ASTVisitor
 					localLineCounter, methodDeclaration.getName().toString()));
 		}
 
-		if (node.getMethods().length > X)
+		if (typeDeclaration.getMethods().length > X)
 			classWithMoreThanXMethods.add(className.toString());
 
-		classWithManyMethods.add(new SetType(className.toString(), node.getMethods().length));
+		classWithManyMethods.add(new SetType(className.toString(), typeDeclaration.getMethods().length));
 
-		methodCounter += node.getMethods().length;
+		methodCounter += typeDeclaration.getMethods().length;
 
 		return true;
 	}
-
+	
+	@Override
 	public boolean visit(MethodInvocation methodInvocation)
 	{
 		Expression expression = methodInvocation.getExpression();
