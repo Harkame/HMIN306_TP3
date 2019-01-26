@@ -1,4 +1,4 @@
-package fr.harkame.astparser.graphe.call;
+package fr.harkame.astparser.graph.call;
 
 public class NodeReference
 {

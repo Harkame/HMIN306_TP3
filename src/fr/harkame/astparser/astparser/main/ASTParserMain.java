@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 
 import fr.harkame.astparser.astparser.example.ASTParserExample;
 import fr.harkame.astparser.astparser.example.visitor.CustomASTVisitor;
-import fr.harkame.astparser.graphe.call.CallGraph;
+import fr.harkame.astparser.graph.call.CallGraph;
 
 public class ASTParserMain
 {
